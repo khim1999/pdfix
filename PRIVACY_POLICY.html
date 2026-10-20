@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - PDFix</title>
+  <style>
+    :root {
+      --primary: #1B5AEB;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #0F172A;
+      --muted: #64748B;
+      --border: #E2E8F0;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #38BDF8;
+        --bg: #0F172A;
+        --card: #1E293B;
+        --text: #F8FAFC;
+        --muted: #94A3B8;
+        --border: #334155;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 48px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    h1 { font-size: 32px; font-weight: 800; margin-top: 0; color: var(--primary); }
+    h2 { font-size: 22px; margin-top: 32px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    h3 { font-size: 18px; margin-top: 24px; }
+    p, li { font-size: 15px; color: var(--text); }
+    ul { padding-left: 24px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(27, 90, 235, 0.1);
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    .highlight-box {
+      background: rgba(27, 90, 235, 0.05);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 24px 0;
+    }
+    .highlight-box ul { margin: 0; padding-left: 20px; }
+    .footer { margin-top: 40px; font-size: 13px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">Privacy First • 100% Offline</div>
+    <h1>Privacy Policy for PDFix</h1>
+    <p><em>Last Updated: October 20, 2026</em></p>
+
+    <div class="highlight-box">
+      <strong>Summary (The Short Version):</strong>
+      <ul>
+        <li><strong>100% On-Device Processing</strong>: All PDF operations run locally on your device hardware.</li>
+        <li><strong>Zero Cloud Uploads</strong>: Your documents are never uploaded to any remote server or cloud.</li>
+        <li><strong>Zero Data Collection</strong>: No names, emails, telemetry, or analytics trackers.</li>
+        <li><strong>Privacy Protection</strong>: Includes 4-Digit PIN Lock, Anti-Spy (FLAG_SECURE), and Storage Cache Shredder.</li>
+      </ul>
+    </div>
+
+    <h2>1. Information We Do Not Collect</h2>
+    <p>Unlike cloud PDF converters, PDFix functions completely offline. When you view, compress, merge, split, or convert a PDF, all processing is performed on your device CPU and memory. We do not require account registration, and we do not collect personal identities, advertising IDs, or geolocation.</p>
+
+    <h2>2. Device Permissions</h2>
+    <p>PDFix requests only the permissions strictly required to perform local file operations:</p>
+    <ul>
+      <li><strong>Storage / Media (READ_EXTERNAL_STORAGE)</strong>: Required solely to read PDF documents you select and to save exported files.</li>
+      <li><strong>Network (INTERNET)</strong>: Present for system network connectivity verification; no document contents or telemetry are transmitted.</li>
+      <li><strong>Package Queries (&lt;queries&gt;)</strong>: Used on Android 11+ to verify whether official client apps (such as Telegram, Microsoft Teams, Microsoft Outlook, or WhatsApp) are installed when you tap "Direct Share".</li>
+    </ul>
+
+    <h2>3. Document Sharing</h2>
+    <p>PDFix never shares documents without your explicit action. When you tap "Share", the file is passed directly through Android's standard <code>FileProvider</code> to the target app chosen by you.</p>
+
+    <h2>4. Built-in Security</h2>
+    <p>PDFix features on-device security tools:</p>
+    <ul>
+      <li><strong>App Lock (PIN)</strong>: Protected with salted SHA-256 cryptographic hashing stored in local sandbox storage.</li>
+      <li><strong>Anti-Spy Screen (FLAG_SECURE)</strong>: Prevents screenshots and masks recent app multitask previews.</li>
+      <li><strong>Storage Shredder</strong>: Permanently purges orphaned temporary cache files on demand.</li>
+    </ul>
+
+    <h2>5. Third-Party Services & Children's Privacy</h2>
+    <p>PDFix contains no third-party analytics SDKs, trackers, or advertising networks. We do not collect information from anyone, including children under 13.</p>
+
+    <h2>6. Contact Us</h2>
+    <p>If you have questions regarding this policy, contact TTFC at: <code>support@ttfc-pdfix.local</code></p>
+
+    <div class="footer">
+      &copy; 2026 TTFC. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+

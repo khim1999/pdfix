@@ -1,205 +1,201 @@
-# PDFix — Complete User Guide & Manual
+# PDFix — Simple Step-by-Step User Guide
 
-Welcome to **PDFix**, your fast, all-in-one, 100% offline PDF powerhouse for Android. All operations take place locally on your phone's processor — your files are never uploaded to the cloud or shared with third parties.
-
----
-
-## 📑 Table of Contents
-1. [Installation & Getting Started](#1-installation--getting-started)
-2. [Compress PDF Files](#2-compress-pdf-files)
-3. [Merge Multiple PDFs](#3-merge-multiple-pdfs)
-4. [Split PDF Pages](#4-split-pdf-pages)
-5. [Convert Images to PDF](#5-convert-images-to-pdf)
-6. [Convert PDF to Images](#6-convert-pdf-to-images)
-7. [Rotate PDF Pages](#7-rotate-pdf-pages)
-8. [Watermark Documents](#8-watermark-documents)
-9. [Sign Documents by Hand](#9-sign-documents-by-hand)
-10. [Password Protection & Unlocking](#10-password-protection--unlocking)
-11. [Security & Privacy Center](#11-security--privacy-center)
-12. [Saving & Direct Sharing](#12-saving--direct-sharing)
-13. [Frequently Asked Questions (FAQ)](#13-frequently-asked-questions-faq)
+Welcome to **PDFix**! This guide is written in plain, simple language to help you use every feature of PDFix easily on your Android phone.
 
 ---
 
-## 1. Installation & Getting Started
-
-### Installing the App on Android
-1. Download the latest APK from the `output_apk` folder or [GitHub Releases](https://github.com/khim1999/pdfix/releases):
-   - **`PDFix_arm64.apk`** *(Recommended)*: Ultra-lean 9 MB build for modern phones (Samsung, Google Pixel, Xiaomi, Oppo, etc.).
-   - **`PDFix_Universal.apk`**: Compatible with any Android device running Android 7.0 (Nougat) or newer.
-2. Open the downloaded APK on your phone.
-3. If prompted by Android, tap **Settings** and enable **"Allow from this source"**.
-4. Tap **Install** and open **PDFix**.
+## 📑 What Would You Like to Do?
+1. [How to Install the App](#1-how-to-install-the-app)
+2. [How to Make a PDF Smaller (Compress)](#2-how-to-make-a-pdf-smaller-compress)
+3. [How to Combine Multiple PDFs (Merge)](#3-how-to-combine-multiple-pdfs-merge)
+4. [How to Separate or Cut Pages (Split)](#4-how-to-separate-or-cut-pages-split)
+5. [How to Turn Photos into a PDF (Images to PDF)](#5-how-to-turn-photos-into-a-pdf-images-to-pdf)
+6. [How to Save PDF Pages as Photos (PDF to Images)](#6-how-to-save-pdf-pages-as-photos-pdf-to-images)
+7. [How to Fix Sideways Pages (Rotate)](#7-how-to-fix-sideways-pages-rotate)
+8. [How to Sign a Document with Your Finger](#8-how-to-sign-a-document-with-your-finger)
+9. [How to Add a Stamp or Watermark](#9-how-to-add-a-stamp-or-watermark)
+10. [How to Lock a PDF with a Password](#10-how-to-lock-a-pdf-with-a-password)
+11. [How to Unlock a Password-Protected PDF](#11-how-to-unlock-a-password-protected-pdf)
+12. [How to Lock the PDFix App with a 4-Digit PIN](#12-how-to-lock-the-pdfix-app-with-a-4-digit-pin)
+13. [How to Share Your File (WhatsApp, Telegram, Email)](#13-how-to-share-your-file-whatsapp-telegram-email)
+14. [Frequently Asked Questions (FAQ)](#14-frequently-asked-questions-faq)
 
 ---
 
-## 2. Compress PDF Files
-> **Goal**: Dramatically reduce file size while preserving clear, readable text.
+## 1. How to Install the App
 
-### How to use:
-1. Tap **Compress PDF** on the home screen.
-2. Tap **Select PDF Document** (pick from your recent documents or browse device files).
-3. Choose your desired compression level:
-   - 🔘 **Extreme compression** (`−85%` size reduction):  
-     *Best when you must fit under strict email or portal upload limits (e.g., 2 MB).*
-   - 🔘 **Recommended compression** (`−75%` size reduction • *Default*):  
-     *Balanced print-grade quality. Adobe-level sharp text outlines with 75–85% smaller file size.*
-   - 🔘 **Less compression** (`−50%` size reduction):  
-     *Highest visual fidelity for documents containing detailed photos or artwork.*
-4. Tap **Compress PDF**.
-5. When finished, you will see your file size before and after, along with the percentage saved.
-6. Tap **Share** or **Save** to export your new document.
+1. Download **`PDFix_arm64.apk`** (recommended for almost all Android phones) or **`PDFix_Universal.apk`**.
+2. Tap the downloaded file on your phone.
+3. If your phone asks for permission to install, tap **Settings** and turn on **"Allow from this source"**.
+4. Tap **Install**, then tap **Open**. You're ready to go!
+
+---
+
+## 2. How to Make a PDF Smaller (Compress)
+> Use this when your PDF is too big to send via email, WhatsApp, or upload to a website.
+
+### Step-by-Step:
+1. On the home screen, tap **Compress PDF**.
+2. Tap **Select PDF Document** and pick the file you want to shrink.
+3. Choose how much you want to compress:
+   - 🔘 **Recommended compression** *(Best choice! Already selected)*:  
+     Cuts file size by around **75%** (a 30 MB file becomes ~4 MB) while keeping all text sharp, clear, and easy to read.
+   - 🔘 **Extreme compression**:  
+     Makes the file as small as possible. Great when a website has a strict 2 MB upload limit.
+   - 🔘 **Less compression**:  
+     Saves some space while keeping the highest photo quality.
+4. Tap the blue **Compress PDF** button.
+5. Watch the live progress bar.
+6. When done, you will see how much space you saved (for example: `30 MB → 4 MB • −86%`).
+7. Tap **Share** to send it right away, or **Save** to keep it in your phone's folder.
+
+---
+
+## 3. How to Combine Multiple PDFs (Merge)
+> Use this when you have several receipts, bills, or documents and want them all in one single file.
+
+### Step-by-Step:
+1. Tap **Merge PDF** on the home screen.
+2. Tap **Add PDF** and pick your first file.
+3. Tap **Add PDF** again to add a second, third, or fourth file.
+4. If you want to change the order, hold and drag any file up or down.
+5. Tap **Merge Files**.
+6. Done! Your single combined PDF is ready to view or share.
+
+---
+
+## 4. How to Separate or Cut Pages (Split)
+> Use this when you only need a few pages from a 20-page document, or want each page saved as its own file.
+
+### Step-by-Step:
+1. Tap **Split PDF** and pick your file.
+2. Choose how you want to split:
+   - **Page Ranges**: Type the pages you want (e.g. `1-3, 5` to keep pages 1, 2, 3, and 5).
+   - **Every Page**: Saves every single page as its own separate file.
+   - **Every N Pages**: Cuts the document every 2 pages (or any number you choose).
+3. Tap **Split PDF**.
+4. Tap any part to open or send it, or tap **Save All to Folder** to save all parts at once.
+
+---
+
+## 5. How to Turn Photos into a PDF (Images to PDF)
+> Use this when you took photos of documents, receipts, or IDs and want to send them as a neat PDF.
+
+### Step-by-Step:
+1. Tap **Images to PDF** on the home screen.
+2. Tap **Choose Images** and select the photos from your phone's gallery.
+3. Review the pictures in your list.
+4. Tap **Convert to PDF**.
+5. Done! Your photos are now saved together in one clean PDF.
+
+---
+
+## 6. How to Save PDF Pages as Photos (PDF to Images)
+> Use this when you need a page from a PDF saved as a picture (JPEG) in your photo gallery.
+
+### Step-by-Step:
+1. Tap **PDF to Images** on the home screen.
+2. Pick your PDF file.
+3. Tap **Convert to Images**.
+4. Done! Every page is saved as a clear picture on your phone.
+
+---
+
+## 7. How to Fix Sideways Pages (Rotate)
+> Use this when a scanned document is upside down or turned on its side.
+
+### Step-by-Step:
+1. Tap **Rotate Pages** on the home screen.
+2. Pick your PDF document.
+3. Tap the turn button you need:
+   - **90°** (Turn clockwise)
+   - **180°** (Flip upside down)
+   - **270°** (Turn counter-clockwise)
+4. Tap **Rotate Pages**. Done! The file is now right-side up.
+
+---
+
+## 8. How to Sign a Document with Your Finger
+> Use this to sign contracts, job applications, or forms without printing them out.
+
+### Step-by-Step:
+1. Tap **Sign Document** and choose your PDF.
+2. Pick the page number where your signature should go.
+3. Draw your signature inside the box using your finger or stylus pen.
+   - If it doesn't look right, tap **Clear** and draw again.
+4. Tap **Apply Signature**. Done! Your signature is placed on the document.
+
+---
+
+## 9. How to Add a Stamp or Watermark
+> Use this to mark a document as `CONFIDENTIAL`, `DRAFT`, or `SAMPLE`.
+
+### Step-by-Step:
+1. Tap **Watermark** and select your PDF.
+2. Type the word you want across the page (like `CONFIDENTIAL` or your company name).
+3. Tap **Apply Watermark**. Done! The word appears faintly across every page.
+
+---
+
+## 10. How to Lock a PDF with a Password
+> Use this to protect private bank statements, salary slips, or personal documents.
+
+### Step-by-Step:
+1. Tap **Protect PDF** and select your file.
+2. Type a password of your choice.
+3. Tap **Encrypt & Save**.
+4. Nobody can open the file unless they type your password.
+
+---
+
+## 11. How to Unlock a Password-Protected PDF
+> Use this to remove the password from a PDF so you don't have to re-enter it every time.
+
+### Step-by-Step:
+1. Tap **Unlock PDF** and pick your locked file.
+2. Type the current password once.
+3. Tap **Remove Password**.
+4. The PDF is now unlocked and can be opened freely.
+
+---
+
+## 12. How to Lock the PDFix App with a 4-Digit PIN
+> Keep anyone using your phone from viewing your private PDF files.
+
+### Step-by-Step:
+1. At the top of the home screen, tap the green **Security** button.
+2. Turn on **App PIN Lock**.
+3. Type any 4-digit PIN you want to remember (like `1234`), then type it again to confirm.
+4. That's it! Now whenever you leave the app and come back, PDFix will ask for your PIN.
 
 > [!TIP]
-> **Guaranteed Anti-Inflation**: PDFix guarantees that a compressed file will **never** be larger than the original input document.
+> **Anti-Spy Protection**: In the same Security menu, turn on **Anti-Spy Screen**. This blocks people from taking screenshots of your documents and hides the app preview when switching between apps.
 
 ---
 
-## 3. Merge Multiple PDFs
-> **Goal**: Combine multiple PDF reports, receipts, or notes into a single document.
+## 13. How to Share Your File (WhatsApp, Telegram, Email)
 
-### How to use:
-1. Tap **Merge PDF** on the home screen.
-2. Tap **Add PDF** to pick your first file.
-3. Tap **Add PDF** again to add more files (select as many as you need).
-4. Reorder documents by dragging the reorder handles if needed.
-5. Tap **Merge Files**.
-6. Your merged document is saved instantly with best-stream compression.
-
----
-
-## 4. Split PDF Pages
-> **Goal**: Extract specific pages or separate a large document into individual files.
-
-### How to use:
-1. Tap **Split PDF** and select your document.
-2. Select your split mode:
-   - **Page Ranges**: Enter custom ranges separated by commas (e.g. `1-3, 5, 7-10`).
-   - **Every Page**: Breaks every single page into its own standalone PDF file.
-   - **Every N Pages**: Splits document into chunks of N pages (e.g., every 2 pages).
-3. Tap **Split PDF**.
-4. Tap any created part to preview or share it individually, or tap **Save All to Folder**.
+Whenever you finish working on any file in PDFix:
+1. Tap the **Share** button on the result screen.
+2. Choose where you want to send it:
+   - ✈️ **Telegram**: Sends as a document right into your chat.
+   - 💬 **WhatsApp**: Attaches straight into any conversation.
+   - 💼 **Microsoft Teams**: Sends to your work channel or colleague.
+   - ✉️ **Outlook / Gmail**: Attaches directly to a new email.
+   - 💾 **Save to Phone**: Pick any folder on your phone or SD card to save it permanently.
 
 ---
 
-## 5. Convert Images to PDF
-> **Goal**: Turn camera photos, invoices, IDs, or receipts into a clean PDF document.
+## 14. Frequently Asked Questions (FAQ)
 
-### How to use:
-1. Tap **Images to PDF** on the home screen.
-2. Tap **Choose Images** and pick photos from your photo gallery.
-3. Review the selected images in the list.
-4. Tap **Convert to PDF**.
-5. PDFix compiles your photos into a standardized, compressed A4 PDF document.
+#### Q: Do I need internet or Wi-Fi to use PDFix?
+**A: No.** PDFix works 100% offline. Everything is processed directly on your phone. You can use it in airplane mode with no Wi-Fi or mobile data.
 
----
+#### Q: Can PDFix steal or see my documents?
+**A: Never.** PDFix does not have servers, accounts, or tracking. Your files never leave your phone.
 
-## 6. Convert PDF to Images
-> **Goal**: Save pages of a PDF as individual high-resolution JPEG images.
+#### Q: Will compressing my PDF make the text blurry?
+**A: No.** PDFix uses high-definition print rendering. Text stays sharp and readable.
 
-### How to use:
-1. Tap **PDF to Images** and pick your PDF.
-2. Tap **Convert to Images**.
-3. PDFix streams through each page and exports high-definition JPEG files to your storage.
-4. You can share images directly or open them in your photo gallery.
-
----
-
-## 7. Rotate PDF Pages
-> **Goal**: Fix documents or scans that were saved sideways or upside-down.
-
-### How to use:
-1. Tap **Rotate Pages** and pick your file.
-2. Select your rotation angle:
-   - **90°** (Clockwise quarter-turn)
-   - **180°** (Upside down flip)
-   - **270°** (Counter-clockwise quarter-turn)
-3. Tap **Rotate Pages**. The corrected PDF is saved immediately.
-
----
-
-## 8. Watermark Documents
-> **Goal**: Stamp a security or confidentiality notice across all pages.
-
-### How to use:
-1. Tap **Watermark** and select your PDF document.
-2. Type your watermark text (e.g., `CONFIDENTIAL`, `DRAFT`, `COPY`, or your company name).
-3. Tap **Apply Watermark**.
-4. PDFix applies a semi-transparent angled text stamp across every page without obscuring underlying content.
-
----
-
-## 9. Sign Documents by Hand
-> **Goal**: Sign contracts, agreements, or forms directly with your finger or stylus.
-
-### How to use:
-1. Tap **Sign Document** and choose your PDF file.
-2. Select the page number where you want your signature placed.
-3. Draw your signature in the signature pad using your finger or stylus.
-   - If you make a mistake, tap **Clear** and redraw.
-4. Tap **Apply Signature**.
-5. Your signature is embedded onto the document with high resolution.
-
----
-
-## 10. Password Protection & Unlocking
-> **Goal**: Encrypt confidential documents with AES-256 or remove password restrictions.
-
-### Protecting a PDF:
-1. Tap **Protect PDF** and select your file.
-2. Enter your desired password.
-3. Tap **Encrypt & Save**. The document is secured with military-grade AES-256 encryption.
-
-### Unlocking a PDF:
-1. Tap **Unlock PDF** and select the protected document.
-2. Enter the current password.
-3. Tap **Remove Password**. The restriction is stripped, allowing easy editing and printing.
-
----
-
-## 11. Security & Privacy Center
-
-Access the Security Center by tapping the **Security & Privacy** pill at the top of the home screen.
-
-### Features:
-- **4-Digit PIN App Lock**:
-  - Enable to require a secure PIN each time PDFix opens.
-  - Automatically locks as soon as the app is switched or sent to the background.
-  - Uses cryptographic salted SHA-256 hashing.
-- **Anti-Spy Shield (`FLAG_SECURE`)**:
-  - Prevents screenshot and screen recording tools from capturing your sensitive documents.
-  - Blanks out app preview in the Android task switcher (recents screen).
-- **Storage & Cache Shredder**:
-  - View real-time disk cache usage.
-  - Tap **Wipe Cache & Temp Files** to permanently shred temporary working files.
-
----
-
-## 12. Saving & Direct Sharing
-
-When any PDF operation is finished, you can:
-- **Open**: Preview the document in the built-in PDF viewer.
-- **Save to Device**: Pick any folder on your phone or SD card to store the file permanently.
-- **Direct Share**: One-tap native sharing to:
-  - ✈️ **Telegram**
-  - 💬 **WhatsApp**
-  - 💼 **Microsoft Teams**
-  - ✉️ **Microsoft Outlook**
-  - 📤 **Android System Share Sheet** (Gmail, Drive, Bluetooth, etc.)
-
----
-
-## 13. Frequently Asked Questions (FAQ)
-
-#### Q: Does PDFix upload my files to the internet?
-**A: No.** PDFix operates 100% offline. All conversions, compression, and encryption happen strictly inside your phone's processor. No internet connection is ever required.
-
-#### Q: Why does PDF compression make text look sharp instead of blurry?
-**A: Native Print Rendering.** PDFix uses Android's native subpixel anti-aliasing engine (`RENDER_MODE_FOR_PRINT`). This optimizes font hints and vector paths so text remains sharp and legible even at high compression ratios.
-
-#### Q: Can I cancel a long operation?
-**A: Yes.** A live **Cancel** button appears during operations. Tapping Cancel safely stops processing at the current page boundary without leaving partial or corrupted files.
-
-#### Q: Where are my processed files stored?
-**A: App Documents Directory.** Processed files are saved under `PDFix/` in your app storage and listed under **Recent Files** on the home screen. You can also save them to your `Download` or `Documents` folder at any time.
-
+#### Q: What if I tap compress by accident? Can I cancel?
+**A: Yes.** A **Cancel** button appears while processing. Tapping it stops the task immediately without damaging your original file.

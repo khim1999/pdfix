@@ -180,26 +180,39 @@ class PdfService {
 
     // 2. Adobe-Grade Calibrated Presets (Razor Sharp & Clearly Readable)
     // NEVER downsample to blurry low DPIs. Text must remain crisp, clear, and easily readable!
-    // Light: 180 DPI @ 82% quality (indistinguishable from original, razor sharp)
-    // Balanced: 150 DPI @ 75% quality (Adobe Acrobat standard, clean sharp text, zero blur)
-    // Strong: 135 DPI @ 68% quality (clean & crisp, strong file size reduction)
-    // Extreme: 120 DPI @ 60% quality (compact size, text remains fully legible)
-    final (dpi, quality) = switch (level) {
-      CompressLevel.light => (180.0, 82),
-      CompressLevel.balanced => (150.0, 75),
-      CompressLevel.strong => (135.0, 68),
-      CompressLevel.extreme => (120.0, 60),
+    // Uses Android native RENDER_MODE_FOR_PRINT (forPrint: true) for full subpixel anti-aliasing.
+    // Light: 200 DPI @ 82% quality (indistinguishable from original, razor sharp)
+    // Balanced: 165 DPI @ 76% quality (Adobe Acrobat standard, clean sharp text, zero blur)
+    // Strong: 140 DPI @ 70% quality (clean & crisp, strong file size reduction)
+    // Extreme: 120 DPI @ 62% quality (compact size, text remains fully legible)
+    var (dpi, quality) = switch (level) {
+      CompressLevel.light => (200.0, 82),
+      CompressLevel.balanced => (165.0, 76),
+      CompressLevel.strong => (140.0, 70),
+      CompressLevel.extreme => (120.0, 62),
     };
 
-    final maxDimension = switch (level) {
-      CompressLevel.light => 2400.0,
-      CompressLevel.balanced => 2000.0,
-      CompressLevel.strong => 1750.0,
+    var maxDimension = switch (level) {
+      CompressLevel.light => 2600.0,
+      CompressLevel.balanced => 2200.0,
+      CompressLevel.strong => 1800.0,
       CompressLevel.extreme => 1500.0,
     };
 
     final input = await px.PdfDocument.openFile(src.path);
     final totalPages = input.pagesCount;
+
+    // Smooth page budget adaptation if document is already compact:
+    if (totalPages > 0) {
+      final origBytesPerPage = srcSize / totalPages;
+      if (origBytesPerPage < 180 * 1024) {
+        final factor = (origBytesPerPage / (180 * 1024)).clamp(0.80, 1.0);
+        dpi = (dpi * factor).clamp(120.0, 200.0);
+        quality = (quality * factor).round().clamp(60, 82);
+        maxDimension = (maxDimension * factor).clamp(1500.0, 2600.0);
+      }
+    }
+
     final scale = dpi / 72.0;
 
     Future<Uint8List?> renderDocument(double s, int q, double maxDim) async {
@@ -220,6 +233,7 @@ class PdfService {
           height: renderHeight,
           format: px.PdfPageImageFormat.jpeg,
           quality: q,
+          forPrint: true, // Native Android print mode: full subpixel anti-aliasing & sharp font outlines
           backgroundColor: '#FFFFFF',
         );
         final fmt = PdfPageFormat(page.width, page.height);
@@ -246,7 +260,7 @@ class PdfService {
     } catch (_) {}
 
     // Fallback pass: ONLY if the first pass was larger than original input,
-    // try a clean, readable secondary pass at 120 DPI @ 62% quality (still sharp and readable, never blurry!):
+    // try a clean, readable secondary pass at 120 DPI @ 62% quality with forPrint: true (never blurry!):
     if ((resBytes == null || resBytes.length >= srcSize) && level != CompressLevel.light) {
       onProgress(0.05);
       try {
@@ -534,6 +548,7 @@ class PdfService {
         format: px.PdfPageImageFormat.jpeg,
         backgroundColor: '#FFFFFF',
         quality: 90,
+        forPrint: true,
       );
       await page.close();
       if (img != null) {

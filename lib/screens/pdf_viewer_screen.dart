@@ -179,6 +179,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               format: PdfPageImageFormat.jpeg,
               backgroundColor: '#FFFFFF',
               quality: 92,
+              forPrint: true,
             ),
             onDocumentLoaded: (doc) {
               if (mounted) {

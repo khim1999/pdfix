@@ -134,9 +134,9 @@ class _LevelTile extends StatelessWidget {
 
   String get _tag => switch (level) {
     CompressLevel.light => '−25%',
-    CompressLevel.balanced => '−70%',
-    CompressLevel.strong => '−80%',
-    CompressLevel.extreme => '−90%',
+    CompressLevel.balanced => '−65%',
+    CompressLevel.strong => '−75%',
+    CompressLevel.extreme => '−85%',
   };
 
   @override

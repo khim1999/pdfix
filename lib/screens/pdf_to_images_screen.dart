@@ -16,6 +16,8 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
   PickedPdf? file;
   bool busy = false;
   double progress = 0;
+  String status = '';
+  bool _cancelled = false;
   List<File> results = [];
 
   Future<void> _pick() async {
@@ -29,27 +31,54 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
       setState(() {
         file = f;
         results = [];
+        status = '';
       });
     }
   }
 
   Future<void> _run() async {
-    if (file == null) return;
+    if (busy || file == null) return;
     setState(() {
       busy = true;
       progress = 0;
+      status = 'Preparing pages…';
+      _cancelled = false;
       results = [];
     });
     try {
-      final out = await PdfService.pdfToImages(file!, (p) {
-        if (mounted) setState(() => progress = p);
-      });
+      final out = await PdfService.pdfToImages(
+        file!,
+        (p, [s]) {
+          if (mounted) {
+            setState(() {
+              progress = p;
+              if (s != null) status = s;
+            });
+          }
+        },
+        isCancelled: () => _cancelled,
+      );
+      if (_cancelled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Conversion cancelled.')),
+          );
+        }
+        return;
+      }
       if (mounted) setState(() => results = out);
     } catch (_) {
-      if (mounted) showError(context, 'Could not convert PDF to images.');
+      if (mounted && !_cancelled) showError(context, 'Could not convert PDF to images.');
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  void _cancel() {
+    setState(() {
+      _cancelled = true;
+      status = 'Cancelling…';
+    });
   }
 
   @override
@@ -78,6 +107,8 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
           accentSoft: Brand.pdfToImgSoft,
           busy: busy,
           progress: progress,
+          status: status,
+          onCancel: _cancel,
           onPressed: file == null ? null : _run,
         ),
         if (results.isNotEmpty) ...[

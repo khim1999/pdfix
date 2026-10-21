@@ -15,6 +15,8 @@ class _CompressScreenState extends State<CompressScreen> {
   CompressLevel level = CompressLevel.balanced;
   bool busy = false;
   double progress = 0;
+  String status = '';
+  bool _cancelled = false;
   CompressResult? result;
 
   Future<void> _pick() async {
@@ -28,26 +30,61 @@ class _CompressScreenState extends State<CompressScreen> {
       setState(() {
         file = f;
         result = null;
+        status = '';
       });
     }
   }
 
   Future<void> _run() async {
+    if (busy || file == null) return;
     setState(() {
       busy = true;
       progress = 0;
+      status = 'Preparing document…';
+      _cancelled = false;
       result = null;
     });
     try {
-      final r = await PdfService.compress(file!, level, (v) {
-        if (mounted) setState(() => progress = v);
-      });
-      if (mounted) setState(() => result = r);
+      final r = await PdfService.compress(
+        file!,
+        level,
+        (v, [s]) {
+          if (mounted) {
+            setState(() {
+              progress = v;
+              if (s != null) status = s;
+            });
+          }
+        },
+        isCancelled: () => _cancelled,
+      );
+
+      if (_cancelled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Compression cancelled.')),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() => result = r);
+      }
     } catch (e) {
-      if (mounted) showError(context, 'Could not compress this file. It may be protected or damaged.');
+      if (mounted && !_cancelled) {
+        showError(context, 'Could not compress this file. It may be protected or damaged.');
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  void _cancel() {
+    setState(() {
+      _cancelled = true;
+      status = 'Cancelling…';
+    });
   }
 
   @override
@@ -105,6 +142,8 @@ class _CompressScreenState extends State<CompressScreen> {
           accentSoft: Brand.compressSoft,
           busy: busy,
           progress: progress,
+          status: status,
+          onCancel: _cancel,
           onPressed: file == null ? null : _run,
         ),
         if (r != null) ...[

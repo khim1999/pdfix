@@ -15,6 +15,8 @@ class _MergeScreenState extends State<MergeScreen> {
   List<PickedPdf> files = [];
   bool busy = false;
   double progress = 0;
+  String status = '';
+  bool _cancelled = false;
   File? result;
 
   Future<void> _pick() async {
@@ -28,11 +30,13 @@ class _MergeScreenState extends State<MergeScreen> {
       setState(() {
         files.add(f);
         result = null;
+        status = '';
       });
     }
   }
 
   Future<void> _run() async {
+    if (busy) return;
     if (files.length < 2) {
       showError(context, 'Please choose at least 2 PDF files to merge.');
       return;
@@ -40,18 +44,44 @@ class _MergeScreenState extends State<MergeScreen> {
     setState(() {
       busy = true;
       progress = 0;
+      status = 'Preparing merge…';
+      _cancelled = false;
       result = null;
     });
     try {
-      final out = await PdfService.merge(files, (v) {
-        if (mounted) setState(() => progress = v);
-      });
+      final out = await PdfService.merge(
+        files,
+        (v, [s]) {
+          if (mounted) {
+            setState(() {
+              progress = v;
+              if (s != null) status = s;
+            });
+          }
+        },
+        isCancelled: () => _cancelled,
+      );
+      if (_cancelled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Merge operation cancelled.')),
+          );
+        }
+        return;
+      }
       if (mounted) setState(() => result = out);
     } catch (_) {
-      if (mounted) showError(context, 'Could not merge these files.');
+      if (mounted && !_cancelled) showError(context, 'Could not merge these files.');
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  void _cancel() {
+    setState(() {
+      _cancelled = true;
+      status = 'Cancelling…';
+    });
   }
 
   @override
@@ -157,6 +187,8 @@ class _MergeScreenState extends State<MergeScreen> {
           accentSoft: Brand.mergeSoft,
           busy: busy,
           progress: progress,
+          status: status,
+          onCancel: _cancel,
           onPressed: files.length < 2 ? null : _run,
         ),
         if (r != null) ...[

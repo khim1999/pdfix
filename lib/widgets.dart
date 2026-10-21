@@ -199,6 +199,8 @@ class GradientButton extends StatelessWidget {
   final Color accentSoft;
   final bool busy;
   final double progress;
+  final String? status;
+  final VoidCallback? onCancel;
   final VoidCallback? onPressed;
 
   const GradientButton({
@@ -210,10 +212,77 @@ class GradientButton extends StatelessWidget {
     required this.onPressed,
     this.busy = false,
     this.progress = 0,
+    this.status,
+    this.onCancel,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (busy && onCancel != null) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [accent, accentSoft]),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withOpacity(.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.6,
+                        color: Colors.white,
+                        value: progress > 0 ? progress : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        status ?? (progress > 0 ? 'Working… ${(progress * 100).round()}%' : 'Working…'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: onCancel,
+            icon: const Icon(Icons.close_rounded, size: 18, color: Colors.redAccent),
+            label: const Text('Cancel Operation', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700)),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.redAccent.withOpacity(0.5)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+          ),
+        ],
+      );
+    }
+
     final enabled = onPressed != null && !busy;
     return Opacity(
       opacity: onPressed == null ? .45 : 1,
@@ -229,9 +298,10 @@ class GradientButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                    color: accent.withOpacity(.35),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8)),
+                  color: accent.withOpacity(.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
               ],
             ),
             child: Center(
@@ -247,14 +317,18 @@ class GradientButton extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                          progress > 0
-                              ? 'Working… ${(progress * 100).round()}%'
-                              : 'Working…',
+                      Flexible(
+                        child: Text(
+                          status ?? (progress > 0 ? 'Working… ${(progress * 100).round()}%' : 'Working…'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16)),
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
                     ])
                   : Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(icon, color: Colors.white),

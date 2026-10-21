@@ -51,8 +51,6 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
 
   Future<void> _loadRecentDocuments() async {
     try {
-      final list = <PickedPdf>[];
-      // Scan standard paths
       final checkDirs = [
         Directory('/sdcard/Download'),
         Directory('/sdcard/Documents'),
@@ -64,8 +62,7 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
       for (final dir in checkDirs) {
         if (await dir.exists()) {
           try {
-            final entities = dir.listSync();
-            for (final entity in entities) {
+            await for (final entity in dir.list(followLinks: false)) {
               if (entity is File && entity.path.toLowerCase().endsWith('.pdf')) {
                 if (!foundFiles.any((x) => x.path == entity.path)) {
                   foundFiles.add(entity);
@@ -76,32 +73,43 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
         }
       }
 
-      // Sort by last modified (newest first) and take the top 12
-      foundFiles.sort((a, b) {
+      // Query modification dates asynchronously
+      final withStats = <(File, DateTime, int)>[];
+      for (final entity in foundFiles) {
         try {
-          return b.lastModifiedSync().compareTo(a.lastModifiedSync());
-        } catch (_) {
-          return 0;
-        }
-      });
-
-      for (final entity in foundFiles.take(12)) {
-        try {
-          final length = await entity.length();
-          final pages = await PdfService.getPageCount(entity.path);
-          list.add(PickedPdf(
-            entity.path,
-            p.basename(entity.path),
-            length,
-            pages,
-          ));
+          final stat = await entity.stat();
+          withStats.add((entity, stat.modified, stat.size));
         } catch (_) {}
+      }
+      withStats.sort((a, b) => b.$2.compareTo(a.$2));
+
+      // Fast initial population (instant display, no page count delay)
+      final initialList = <PickedPdf>[];
+      for (final item in withStats.take(15)) {
+        initialList.add(PickedPdf(
+          item.$1.path,
+          p.basename(item.$1.path),
+          item.$3,
+          1,
+        ));
       }
 
       if (mounted) {
         setState(() {
-          _recentFiles = list;
+          _recentFiles = initialList;
         });
+      }
+
+      // Progressively resolve page counts in background without blocking UI
+      for (var i = 0; i < initialList.length; i++) {
+        if (!mounted) break;
+        final item = initialList[i];
+        final pages = await PdfService.getPageCount(item.path);
+        if (pages != item.pages && mounted) {
+          setState(() {
+            _recentFiles[i] = PickedPdf(item.path, item.name, item.size, pages);
+          });
+        }
       }
     } catch (_) {}
   }

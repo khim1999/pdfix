@@ -16,6 +16,7 @@ class _RotateScreenState extends State<RotateScreen> {
   int degrees = 90;
   bool busy = false;
   double progress = 0;
+  String status = '';
   File? result;
 
   Future<void> _pick() async {
@@ -29,19 +30,27 @@ class _RotateScreenState extends State<RotateScreen> {
       setState(() {
         file = f;
         result = null;
+        status = '';
       });
     }
   }
 
   Future<void> _run() async {
+    if (busy || file == null) return;
     setState(() {
       busy = true;
       progress = 0;
+      status = 'Preparing rotation…';
       result = null;
     });
     try {
-      final out = await PdfService.rotate(file!, degrees, (v) {
-        if (mounted) setState(() => progress = v);
+      final out = await PdfService.rotate(file!, degrees, (v, [s]) {
+        if (mounted) {
+          setState(() {
+            progress = v;
+            if (s != null) status = s;
+          });
+        }
       });
       if (mounted) setState(() => result = out);
     } catch (_) {
@@ -124,6 +133,7 @@ class _RotateScreenState extends State<RotateScreen> {
           accentSoft: Brand.rotateSoft,
           busy: busy,
           progress: progress,
+          status: status,
           onPressed: file == null ? null : _run,
         ),
         if (r != null) ...[

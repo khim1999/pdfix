@@ -19,6 +19,8 @@ class _SplitScreenState extends State<SplitScreen> {
   final nCtrl = TextEditingController(text: '2');
   bool busy = false;
   double progress = 0;
+  String status = '';
+  bool _cancelled = false;
   List<File> results = [];
 
   @override
@@ -39,11 +41,13 @@ class _SplitScreenState extends State<SplitScreen> {
       setState(() {
         file = f;
         results = [];
+        status = '';
       });
     }
   }
 
   Future<void> _run() async {
+    if (busy || file == null) return;
     final f = file!;
     List<List<int>> groups;
     try {
@@ -68,18 +72,47 @@ class _SplitScreenState extends State<SplitScreen> {
     setState(() {
       busy = true;
       progress = 0;
+      status = 'Preparing split…';
+      _cancelled = false;
       results = [];
     });
     try {
-      final out = await PdfService.split(f, groups, (v) {
-        if (mounted) setState(() => progress = v);
-      });
+      final out = await PdfService.split(
+        f,
+        groups,
+        (v, [s]) {
+          if (mounted) {
+            setState(() {
+              progress = v;
+              if (s != null) status = s;
+            });
+          }
+        },
+        isCancelled: () => _cancelled,
+      );
+      if (_cancelled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Split operation cancelled.')),
+          );
+        }
+        return;
+      }
       if (mounted) setState(() => results = out);
     } catch (_) {
-      if (mounted) showError(context, 'Could not split this file. It may be protected or damaged.');
+      if (mounted && !_cancelled) {
+        showError(context, 'Could not split this file. It may be protected or damaged.');
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  void _cancel() {
+    setState(() {
+      _cancelled = true;
+      status = 'Cancelling…';
+    });
   }
 
   @override
@@ -167,6 +200,8 @@ class _SplitScreenState extends State<SplitScreen> {
           accentSoft: Brand.splitSoft,
           busy: busy,
           progress: progress,
+          status: status,
+          onCancel: _cancel,
           onPressed: file == null ? null : _run,
         ),
         if (results.isNotEmpty) ...[

@@ -24,7 +24,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<File> _recentFiles = [];
+  List<(File, int)> _recentFiles = [];
   bool _loadingRecent = true;
 
   @override
@@ -35,9 +35,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadRecent() async {
     final list = await PdfService.getRecentFiles();
+    final withLengths = <(File, int)>[];
+    for (final f in list) {
+      try {
+        withLengths.add((f, await f.length()));
+      } catch (_) {}
+    }
     if (mounted) {
       setState(() {
-        _recentFiles = list;
+        _recentFiles = withLengths;
         _loadingRecent = false;
       });
     }
@@ -235,10 +241,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 for (final f in _recentFiles)
                   FileResultTile(
-                    name: f.uri.pathSegments.last,
-                    detail: formatBytes(f.lengthSync()),
+                    name: f.$1.uri.pathSegments.last,
+                    detail: formatBytes(f.$2),
                     accent: Brand.compress,
-                    path: f.path,
+                    path: f.$1.path,
                     onRemove: () {
                       setState(() => _recentFiles.remove(f));
                     },

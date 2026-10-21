@@ -202,3 +202,4 @@ When any PDF operation is finished, you can:
 
 #### Q: Where are my processed files stored?
 **A: App Documents Directory.** Processed files are saved under `PDFix/` in your app storage and listed under **Recent Files** on the home screen. You can also save them to your `Download` or `Documents` folder at any time.
+

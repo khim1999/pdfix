@@ -47,6 +47,8 @@ app.*.map.json
 test_*.pdf
 *.apk
 *.aab
+*.pptx
+*.html
 /output_apk/
 .pdfix_security.json
 push_to_github.bat

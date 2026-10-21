@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: const Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(Icons.shield_rounded, size: 14, color: Brand.success),
                       SizedBox(width: 5),
-                      Text('Security & Privacy',
+                      Text('Security',
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Brand.success)),
                       SizedBox(width: 2),
                       Icon(Icons.arrow_forward_ios_rounded, size: 9, color: Brand.success),
@@ -302,8 +302,8 @@ class _BigToolCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Ink(
-          height: 128,
-          padding: const EdgeInsets.all(20),
+          height: 136,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [a, b], begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(24),

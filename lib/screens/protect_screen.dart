@@ -64,7 +64,7 @@ class _ProtectScreenState extends State<ProtectScreen> {
     final r = result;
     return ToolScaffold(
       title: 'Protect PDF',
-      subtitle: 'Encrypt with military-grade 256-bit AES password.',
+      subtitle: 'Lock your document with a secure password.',
       accent: Brand.protect,
       accentSoft: Brand.protectSoft,
       icon: Icons.lock_rounded,

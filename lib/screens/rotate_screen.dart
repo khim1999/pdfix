@@ -56,7 +56,7 @@ class _RotateScreenState extends State<RotateScreen> {
     final r = result;
     return ToolScaffold(
       title: 'Rotate PDF',
-      subtitle: 'Change the orientation of all pages.',
+      subtitle: 'Turn sideways or upside-down pages.',
       accent: Brand.rotate,
       accentSoft: Brand.rotateSoft,
       icon: Icons.rotate_right_rounded,
@@ -70,7 +70,7 @@ class _RotateScreenState extends State<RotateScreen> {
             result = null;
           }),
         ),
-        const SectionTitle('Rotation angle'),
+        const SectionTitle('Choose direction'),
         Row(children: [
           for (final angle in [90, 180, 270])
             Expanded(
@@ -78,7 +78,7 @@ class _RotateScreenState extends State<RotateScreen> {
                 onTap: () => setState(() => degrees = angle),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
                   decoration: BoxDecoration(
                     color: cardColor(context),
                     borderRadius: BorderRadius.circular(18),
@@ -98,11 +98,19 @@ class _RotateScreenState extends State<RotateScreen> {
                       size: 28,
                     ),
                     const SizedBox(height: 8),
-                    Text('$angle°',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: degrees == angle ? Brand.rotate : null,
-                        )),
+                    Text(
+                      switch (angle) {
+                        90 => '90° Right',
+                        180 => '180° Flip',
+                        _ => '90° Left',
+                      },
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: degrees == angle ? Brand.rotate : null,
+                      ),
+                    ),
                   ]),
                 ),
               ),

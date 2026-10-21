@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text('All-in-One\nPDF Powerhouse.',
                   style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, height: 1.1)),
               const SizedBox(height: 8),
-              Text('Edit, convert, protect & organize. Your files never leave your device.',
+              Text('Edit, convert, protect & organize. 100% on-device & private.',
                   style: TextStyle(fontSize: 14.5, color: Theme.of(context).hintColor)),
               const SizedBox(height: 28),
 
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const _CategoryLabel('CORE TOOLS'),
               _BigToolCard(
                 title: 'Compress PDF',
-                subtitle: 'Shrink file size for email & chat.',
+                subtitle: 'Shrink file size for easy email & chat sharing.',
                 icon: Icons.compress_rounded,
                 a: Brand.compress,
                 b: Brand.compressSoft,
@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'Split PDF',
-                    subtitle: 'Cut pages & ranges',
+                    subtitle: 'Extract or separate pages',
                     icon: Icons.call_split_rounded,
                     color: Brand.split,
                     onTap: () => _navigateAndRefresh(const SplitScreen()),
@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'Merge PDF',
-                    subtitle: 'Combine documents',
+                    subtitle: 'Combine multiple files',
                     icon: Icons.layers_rounded,
                     color: Brand.merge,
                     onTap: () => _navigateAndRefresh(const MergeScreen()),
@@ -141,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'Images to PDF',
-                    subtitle: 'Photos to document',
+                    subtitle: 'Convert photos to PDF',
                     icon: Icons.image_rounded,
                     color: Brand.image,
                     onTap: () => _navigateAndRefresh(const ImageToPdfScreen()),
@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'PDF to Images',
-                    subtitle: 'Export pages as JPG',
+                    subtitle: 'Save pages as images',
                     icon: Icons.photo_library_rounded,
                     color: Brand.pdfToImg,
                     onTap: () => _navigateAndRefresh(const PdfToImagesScreen()),
@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'Rotate Pages',
-                    subtitle: 'Fix orientation',
+                    subtitle: 'Turn sideways pages',
                     icon: Icons.rotate_right_rounded,
                     color: Brand.rotate,
                     onTap: () => _navigateAndRefresh(const RotateScreen()),
@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'Watermark',
-                    subtitle: 'Stamp text label',
+                    subtitle: 'Add custom text stamp',
                     icon: Icons.branding_watermark_rounded,
                     color: Brand.watermark,
                     onTap: () => _navigateAndRefresh(const WatermarkScreen()),
@@ -188,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _GridToolCard(
                     title: 'Protect PDF',
-                    subtitle: '256-bit AES password',
+                    subtitle: 'Lock with password',
                     icon: Icons.lock_rounded,
                     color: Brand.protect,
                     onTap: () => _navigateAndRefresh(const ProtectScreen()),
@@ -208,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               _BigToolCard(
                 title: 'Sign Document',
-                subtitle: 'Draw electronic signature with your finger.',
+                subtitle: 'Draw signature with your finger on any page.',
                 icon: Icons.draw_rounded,
                 a: Brand.sign,
                 b: Brand.signSoft,

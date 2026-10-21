@@ -55,7 +55,7 @@ class _CompressScreenState extends State<CompressScreen> {
     final r = result;
     return ToolScaffold(
       title: 'Compress PDF',
-      subtitle: 'Pick a file, choose a level, done.',
+      subtitle: 'Reduce PDF file size quickly without losing clarity.',
       accent: Brand.compress,
       accentSoft: Brand.compressSoft,
       icon: Icons.compress_rounded,
@@ -90,7 +90,7 @@ class _CompressScreenState extends State<CompressScreen> {
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'High Clarity Engine: Documents and text remain sharp, crisp, and clearly legible after compression.',
+                  'Guaranteed Reduction: File sizes never increase. Text and pages remain sharp and easy to read.',
                   style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Brand.success),
                 ),
               ),

@@ -20,10 +20,10 @@ class PickedPdf {
 }
 
 enum CompressLevel {
-  light('Light (Max Quality)', 'Sharp & crisp text. Best visual clarity (15–35% smaller).'),
-  balanced('Balanced (Recommended)', 'Crystal clear readability, high savings (60–80% smaller).'),
-  strong('Strong Compression', 'Clean readable text for email & messaging (75–85% smaller).'),
-  extreme('Extreme Compression', 'Smallest file size with preserved text legibility (85–92% smaller).');
+  light('Basic (High Quality)', 'Keeps crisp original text with light file size reduction (15–30% smaller).'),
+  balanced('Standard (Recommended)', 'Best balance of clear reading & high file savings (60–80% smaller).'),
+  strong('Strong (Email & Chat)', 'Smaller size, perfect for sending via Telegram, Teams, & email (75–85% smaller).'),
+  extreme('Maximum (Smallest Size)', 'Smallest possible file size while keeping text readable (85–92% smaller).');
 
   final String title;
   final String hint;

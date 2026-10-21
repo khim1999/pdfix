@@ -56,7 +56,7 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
   Widget build(BuildContext context) {
     return ToolScaffold(
       title: 'PDF to Images',
-      subtitle: 'Extract all pages into crisp JPG images.',
+      subtitle: 'Save each page as a photo image.',
       accent: Brand.pdfToImg,
       accentSoft: Brand.pdfToImgSoft,
       icon: Icons.photo_library_rounded,

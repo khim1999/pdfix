@@ -50,3 +50,5 @@ test_*.pdf
 /output_apk/
 .pdfix_security.json
 push_to_github.bat
+push_to_github.bat
+

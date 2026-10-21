@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:syncfusion_flutter_pdf/pdf.dart' as sf;
 import '../services/pdf_service.dart';
 import '../theme.dart';
 import '../widgets.dart';

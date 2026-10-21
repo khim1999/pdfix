@@ -86,7 +86,7 @@ class _SplitScreenState extends State<SplitScreen> {
   Widget build(BuildContext context) {
     return ToolScaffold(
       title: 'Split PDF',
-      subtitle: 'Cut a document into smaller files.',
+      subtitle: 'Separate a document into individual pages or parts.',
       accent: Brand.split,
       accentSoft: Brand.splitSoft,
       icon: Icons.call_split_rounded,
@@ -110,9 +110,9 @@ class _SplitScreenState extends State<SplitScreen> {
               selectedForegroundColor: Colors.white,
             ),
             segments: const [
-              ButtonSegment(value: SplitMode.ranges, label: Text('Ranges')),
-              ButtonSegment(value: SplitMode.everyPage, label: Text('Each page')),
-              ButtonSegment(value: SplitMode.everyN, label: Text('Every N')),
+              ButtonSegment(value: SplitMode.ranges, label: Text('Page Ranges')),
+              ButtonSegment(value: SplitMode.everyPage, label: Text('Single Pages')),
+              ButtonSegment(value: SplitMode.everyN, label: Text('By Page Count')),
             ],
             selected: {mode},
             onSelectionChanged: (s) => setState(() => mode = s.first),
@@ -136,8 +136,8 @@ class _SplitScreenState extends State<SplitScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: 6),
                     child: Text(
-                      'Each comma-separated part becomes its own file.'
-                      '${file != null ? ' Pages 1–${file!.pages}.' : ''}',
+                      'Enter page ranges separated by commas or dashes (e.g. 1-3, 5, 8-10).'
+                      '${file != null ? ' Available: Pages 1–${file!.pages}.' : ''}',
                       style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13),
                     ),
                   ),
@@ -145,15 +145,15 @@ class _SplitScreenState extends State<SplitScreen> {
               ),
             SplitMode.everyPage => Text(
                 file == null
-                    ? 'Creates one file per page.'
-                    : 'Creates ${file!.pages} files, one per page.',
+                    ? 'Creates one separate PDF file for each page.'
+                    : 'Creates ${file!.pages} separate PDF files (1 file per page).',
                 style: TextStyle(color: Theme.of(context).hintColor),
               ),
             SplitMode.everyN => TextField(
                 controller: nCtrl,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Pages per file',
+                  labelText: 'Pages per file (e.g. 2, 5, 10)',
                   prefixIcon: Icon(Icons.layers_rounded),
                 ),
               ),

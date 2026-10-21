@@ -63,7 +63,7 @@ class _WatermarkScreenState extends State<WatermarkScreen> {
     final r = result;
     return ToolScaffold(
       title: 'Watermark PDF',
-      subtitle: 'Stamp customized text across all pages.',
+      subtitle: 'Add a text stamp like CONFIDENTIAL or DRAFT across all pages.',
       accent: Brand.watermark,
       accentSoft: Brand.watermarkSoft,
       icon: Icons.branding_watermark_rounded,

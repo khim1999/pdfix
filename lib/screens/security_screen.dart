@@ -268,7 +268,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           _sectionHeader('SCREEN & MEMORY PRIVACY'),
           const SizedBox(height: 12),
 
-          // Feature 2: Anti-Spy / FLAG_SECURE
+          // Feature 2: Anti-Spy / Screenshot Blocker
           Container(
             decoration: BoxDecoration(
               color: cardBg,
@@ -278,10 +278,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
             child: SwitchListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               secondary: _iconBadge(Icons.no_photography_rounded, const Color(0xFF9333EA), dark),
-              title: const Text('Anti-Spy Screen (FLAG_SECURE)',
+              title: const Text('Anti-Spy Screen / Screenshot Shield',
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
               subtitle: Text(
-                'Blocks screenshots and blanks out PDF preview in Android Recent Apps multitasker.',
+                'Blocks screenshots and hides document contents in recent apps switcher.',
                 style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor),
               ),
               value: _sec.isSecureScreenEnabled,
@@ -303,7 +303,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           ),
 
           const SizedBox(height: 24),
-          _sectionHeader('STORAGE & CACHE SHREDDER'),
+          _sectionHeader('STORAGE & CACHE CLEANER'),
           const SizedBox(height: 12),
 
           // Feature 3: Temporary Cache & File Shredder
@@ -325,7 +325,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Temporary Cache Cleaner',
+                          const Text('Temporary Files Cleaner',
                               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
                           const SizedBox(height: 2),
                           Text(
@@ -351,7 +351,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.delete_sweep_rounded, size: 18),
-                    label: Text(_wiping ? 'Purging Cache…' : 'Wipe Temporary Files Now'),
+                    label: Text(_wiping ? 'Clearing Files…' : 'Clean Temporary Files Now'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFEA580C),
                       side: const BorderSide(color: Color(0xFFEA580C)),
@@ -364,10 +364,10 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 Divider(height: 1, color: border),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Auto-Purge on App Start',
+                  title: const Text('Auto-Clean on App Launch',
                       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
                   subtitle: Text(
-                    'Automatically shred orphaned temporary processing files on launch.',
+                    'Automatically clears temporary files whenever PDFix opens.',
                     style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
                   ),
                   value: _sec.isAutoWipeEnabled,

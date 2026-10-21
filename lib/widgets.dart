@@ -83,6 +83,7 @@ class ToolScaffold extends StatelessWidget {
                           const BorderRadius.vertical(top: Radius.circular(32)),
                     ),
                     child: ListView(
+                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                       children: children,
                     ),

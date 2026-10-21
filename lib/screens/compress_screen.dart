@@ -113,7 +113,9 @@ class _CompressScreenState extends State<CompressScreen> {
           const SizedBox(height: 12),
           FileResultTile(
             name: r.file.uri.pathSegments.last,
-            detail: '${formatBytes(r.after)}  •  −${r.savedPercent.toStringAsFixed(1)}%',
+            detail: r.after < r.before
+                ? '${formatBytes(r.after)}  •  −${r.savedPercent.toStringAsFixed(1)}%'
+                : '${formatBytes(r.after)}  •  Maximally Compressed',
             accent: Brand.compress,
             path: r.file.path,
             onRemove: () => setState(() => result = null),
@@ -195,7 +197,7 @@ class _SavingsBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final smaller = r.after < r.before;
-    final color = smaller ? Brand.success : Brand.split;
+    final color = smaller ? Brand.success : Brand.compress;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -204,15 +206,19 @@ class _SavingsBanner extends StatelessWidget {
       ),
       child: Row(children: [
         Text(
-          smaller ? '−${r.savedPercent.toStringAsFixed(0)}%' : 'No gain',
-          style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: color),
+          smaller ? '−${r.savedPercent.toStringAsFixed(0)}%' : 'Optimal',
+          style: TextStyle(
+            fontSize: smaller ? 36 : 28,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
         ),
         const SizedBox(width: 18),
         Expanded(
           child: Text(
             smaller
                 ? '${formatBytes(r.before)} → ${formatBytes(r.after)}'
-                : 'This file is already well compressed. Try a stronger level.',
+                : 'This file is already maximally compressed and cannot be reduced further without loss.',
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),

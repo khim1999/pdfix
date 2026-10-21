@@ -49,3 +49,4 @@ test_*.pdf
 *.aab
 /output_apk/
 .pdfix_security.json
+push_to_github.bat

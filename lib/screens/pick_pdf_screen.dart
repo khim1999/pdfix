@@ -61,32 +61,42 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
         Directory('/storage/emulated/0/Documents'),
       ];
 
+      final foundFiles = <File>[];
       for (final dir in checkDirs) {
         if (await dir.exists()) {
           try {
             final entities = dir.listSync();
             for (final entity in entities) {
-              if (entity is File &&
-                  entity.path.toLowerCase().endsWith('.pdf')) {
-                // Avoid duplicates
-                if (list.any((x) => x.path == entity.path)) continue;
-                try {
-                  final length = await entity.length();
-                  final bytes = await entity.readAsBytes();
-                  final doc = sf.PdfDocument(inputBytes: bytes);
-                  final pages = doc.pages.count;
-                  doc.dispose();
-                  list.add(PickedPdf(
-                    entity.path,
-                    p.basename(entity.path),
-                    length,
-                    pages,
-                  ));
-                } catch (_) {}
+              if (entity is File && entity.path.toLowerCase().endsWith('.pdf')) {
+                if (!foundFiles.any((x) => x.path == entity.path)) {
+                  foundFiles.add(entity);
+                }
               }
             }
           } catch (_) {}
         }
+      }
+
+      // Sort by last modified (newest first) and take the top 12
+      foundFiles.sort((a, b) {
+        try {
+          return b.lastModifiedSync().compareTo(a.lastModifiedSync());
+        } catch (_) {
+          return 0;
+        }
+      });
+
+      for (final entity in foundFiles.take(12)) {
+        try {
+          final length = await entity.length();
+          final pages = await PdfService.getPageCount(entity.path);
+          list.add(PickedPdf(
+            entity.path,
+            p.basename(entity.path),
+            length,
+            pages,
+          ));
+        } catch (_) {}
       }
 
       if (mounted) {

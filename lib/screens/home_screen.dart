@@ -56,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onRefresh: _loadRecent,
           color: Brand.compress,
           child: ListView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 36),
             children: [
               Row(children: [

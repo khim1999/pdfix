@@ -20,10 +20,9 @@ class PickedPdf {
 }
 
 enum CompressLevel {
-  light('Basic (High Quality)', 'Preserves 100% crisp text with clean stream deflation (up to 30% smaller).'),
-  balanced('Standard (Recommended)', 'Adobe-grade clear viewing with significant size reduction (50–75% smaller).'),
-  strong('Strong (Email & Chat)', 'Greatly reduced size for fast sharing; text remains sharp and readable (70–85% smaller).'),
-  extreme('Maximum (Smallest Size)', 'Smallest possible size while maintaining clean, legible text (80–90% smaller).');
+  extreme('Extreme compression', 'Less quality, high compression'),
+  recommended('Recommended compression', 'Good quality, good compression'),
+  less('Less compression', 'High quality, less compression');
 
   final String title;
   final String hint;
@@ -163,9 +162,9 @@ class PdfService {
 
     if (isCancelled?.call() == true) return null;
 
-    // 1. Lossless Stream Deflation (Only for small vector documents < 3MB or Light mode)
+    // 1. Lossless Stream Deflation (Only for small vector documents < 3MB or Less compression mode)
     Uint8List? losslessBytes;
-    if (srcSize < 3 * 1024 * 1024 || level == CompressLevel.light) {
+    if (srcSize < 3 * 1024 * 1024 || level == CompressLevel.less) {
       try {
         final srcBytes = await srcFile.readAsBytes();
         final doc = sf.PdfDocument(inputBytes: srcBytes);
@@ -176,10 +175,9 @@ class PdfService {
       } catch (_) {}
 
       final minLosslessRatio = switch (level) {
-        CompressLevel.light => 0.05,
-        CompressLevel.balanced => 0.20,
-        CompressLevel.strong => 0.35,
-        CompressLevel.extreme => 0.50,
+        CompressLevel.less => 0.08,
+        CompressLevel.recommended => 0.20,
+        CompressLevel.extreme => 0.40,
       };
 
       if (losslessBytes != null && losslessBytes.length <= srcSize * (1.0 - minLosslessRatio)) {
@@ -192,22 +190,19 @@ class PdfService {
     if (isCancelled?.call() == true) return null;
 
     // 2. High-Speed, Print-Quality Presets (forPrint: true for razor-sharp text)
-    // Balanced: 110 DPI @ 66% quality -> ~75-110 KB/page (30MB becomes ~3.5-5MB, sharp text, 0 blur)
-    // Strong: 95 DPI @ 58% quality -> ~50-80 KB/page (30MB becomes ~2.5MB)
-    // Extreme: 82 DPI @ 50% quality -> ~35-55 KB/page (30MB becomes ~1.6MB)
-    // Light: 135 DPI @ 74% quality -> ~130-180 KB/page (30MB becomes ~6MB)
+    // Extreme: 85 DPI @ 50% quality -> ~35-55 KB/page (30MB becomes ~1.8MB)
+    // Recommended: 110 DPI @ 66% quality -> ~75-110 KB/page (30MB becomes ~3.5-5MB, sharp text, 0 blur)
+    // Less: 140 DPI @ 76% quality -> ~130-180 KB/page (30MB becomes ~6MB, maximal visual fidelity)
     var (dpi, quality) = switch (level) {
-      CompressLevel.light => (135.0, 74),
-      CompressLevel.balanced => (110.0, 66),
-      CompressLevel.strong => (95.0, 58),
-      CompressLevel.extreme => (82.0, 50),
+      CompressLevel.extreme => (85.0, 50),
+      CompressLevel.recommended => (110.0, 66),
+      CompressLevel.less => (140.0, 76),
     };
 
     var maxDimension = switch (level) {
-      CompressLevel.light => 1600.0,
-      CompressLevel.balanced => 1300.0,
-      CompressLevel.strong => 1150.0,
-      CompressLevel.extreme => 980.0,
+      CompressLevel.extreme => 1000.0,
+      CompressLevel.recommended => 1300.0,
+      CompressLevel.less => 1600.0,
     };
 
     final input = await px.PdfDocument.openFile(src.path);
@@ -279,7 +274,7 @@ class PdfService {
 
     // Fallback pass: ONLY if the first pass was larger than original input,
     // try an ultra-compact pass at 75 DPI @ 46% quality with forPrint: true:
-    if ((resBytes == null || resBytes.length >= srcSize) && level != CompressLevel.light) {
+    if ((resBytes == null || resBytes.length >= srcSize) && level != CompressLevel.less) {
       onProgress(0.05, 'Applying compact optimization…');
       try {
         resBytes = await renderDocument(75.0 / 72.0, 46, 880.0);
@@ -299,7 +294,7 @@ class PdfService {
       if (chosenBytes == null) {
         chosenBytes = losslessBytes;
       } else {
-        if (level == CompressLevel.light) {
+        if (level == CompressLevel.less) {
           chosenBytes = losslessBytes;
         } else if (resBytes != null && resBytes.length < losslessBytes.length) {
           chosenBytes = resBytes;

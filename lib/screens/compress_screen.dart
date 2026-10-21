@@ -12,7 +12,7 @@ class CompressScreen extends StatefulWidget {
 
 class _CompressScreenState extends State<CompressScreen> {
   PickedPdf? file;
-  CompressLevel level = CompressLevel.balanced;
+  CompressLevel level = CompressLevel.recommended;
   bool busy = false;
   double progress = 0;
   String status = '';
@@ -91,8 +91,8 @@ class _CompressScreenState extends State<CompressScreen> {
   Widget build(BuildContext context) {
     final r = result;
     return ToolScaffold(
-      title: 'Compress PDF',
-      subtitle: 'Reduce PDF file size quickly without losing clarity.',
+      title: 'Compress PDF files',
+      subtitle: 'Reduce file size while optimizing for maximal PDF quality.',
       accent: Brand.compress,
       accentSoft: Brand.compressSoft,
       icon: Icons.compress_rounded,
@@ -136,7 +136,7 @@ class _CompressScreenState extends State<CompressScreen> {
         ),
         const SizedBox(height: 12),
         GradientButton(
-          label: 'Compress',
+          label: 'Compress PDF',
           icon: Icons.bolt_rounded,
           accent: Brand.compress,
           accentSoft: Brand.compressSoft,
@@ -172,58 +172,86 @@ class _LevelTile extends StatelessWidget {
   const _LevelTile({required this.level, required this.selected, required this.onTap});
 
   String get _tag => switch (level) {
-    CompressLevel.light => '−25%',
-    CompressLevel.balanced => '−65%',
-    CompressLevel.strong => '−75%',
     CompressLevel.extreme => '−85%',
+    CompressLevel.recommended => '−75%',
+    CompressLevel.less => '−50%',
   };
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: cardColor(context),
+          color: selected
+              ? (isDark
+                  ? Brand.compress.withOpacity(0.12)
+                  : Brand.compress.withOpacity(0.06))
+              : cardColor(context),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? Brand.compress : Colors.transparent,
-            width: 2,
+            color: selected ? Brand.compress : theme.dividerColor.withOpacity(0.12),
+            width: selected ? 2 : 1,
           ),
         ),
-        child: Row(children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: (selected ? Brand.compress : Colors.grey).withOpacity(.12),
-              borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Icon(
+              selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              color: selected ? Brand.compress : theme.hintColor.withOpacity(0.5),
+              size: 24,
             ),
-            child: Text(
-              _tag,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 12,
-                color: selected ? Brand.compress : Colors.grey,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    level.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15.5,
+                      color: selected
+                          ? (isDark ? Colors.white : Brand.ink)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    level.hint,
+                    style: TextStyle(
+                      color: theme.hintColor,
+                      fontSize: 13,
+                      height: 1.25,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(level.title,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-              const SizedBox(height: 2),
-              Text(level.hint, style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13)),
-            ]),
-          ),
-          Icon(
-            selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-            color: selected ? Brand.compress : Theme.of(context).hintColor,
-          ),
-        ]),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: (selected ? Brand.compress : Colors.grey).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _tag,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11.5,
+                  color: selected ? Brand.compress : theme.hintColor,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

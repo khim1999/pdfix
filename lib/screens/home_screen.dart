@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const _CategoryLabel('CORE TOOLS'),
               _BigToolCard(
                 title: 'Compress PDF',
-                subtitle: 'Shrink file size for easy email & chat sharing.',
+                subtitle: 'Reduce file size while optimizing for maximal PDF quality.',
                 icon: Icons.compress_rounded,
                 a: Brand.compress,
                 b: Brand.compressSoft,

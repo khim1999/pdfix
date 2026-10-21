@@ -40,6 +40,7 @@ class _UnlockScreenState extends State<UnlockScreen> {
   }
 
   Future<void> _run() async {
+    if (busy || file == null) return;
     final pwd = pwdCtrl.text.trim();
     if (pwd.isEmpty) {
       showError(context, 'Please enter the PDF password.');

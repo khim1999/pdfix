@@ -124,7 +124,12 @@ class PdfService {
     return res.files.where((f) => f.path != null).map((f) => f.path!).toList();
   }
 
+  static Directory? _cachedOutDir;
+
   static Future<Directory> _outDir() async {
+    if (_cachedOutDir != null && await _cachedOutDir!.exists()) {
+      return _cachedOutDir!;
+    }
     final base = await getApplicationDocumentsDirectory();
     final newDir = Directory(p.join(base.path, 'PDFix'));
     final oldDir = Directory(p.join(base.path, 'PDF Toolkit'));
@@ -134,7 +139,30 @@ class PdfService {
       } catch (_) {}
     }
     if (!await newDir.exists()) await newDir.create(recursive: true);
+    _cachedOutDir = newDir;
     return newDir;
+  }
+
+  /// Atomic file write: writes to a unique temporary file, flushes to disk,
+  /// and atomically renames. Strictly prevents 0-byte, incomplete, or corrupted outputs.
+  static Future<void> _atomicWrite(File target, List<int> bytes) async {
+    final tmp = File('${target.path}.tmp_${DateTime.now().microsecondsSinceEpoch}');
+    try {
+      await tmp.writeAsBytes(bytes, flush: true);
+      if (await target.exists()) {
+        try {
+          await target.delete();
+        } catch (_) {}
+      }
+      await tmp.rename(target.path);
+    } catch (e) {
+      if (await tmp.exists()) {
+        try {
+          await tmp.delete();
+        } catch (_) {}
+      }
+      rethrow;
+    }
   }
 
   // ---------------------------------------------------------------- Compress
@@ -182,7 +210,7 @@ class PdfService {
 
       if (losslessBytes != null && losslessBytes.length <= srcSize * (1.0 - minLosslessRatio)) {
         onProgress(1.0, 'Completed!');
-        await target.writeAsBytes(losslessBytes);
+        await _atomicWrite(target, losslessBytes);
         return CompressResult(target, srcSize, losslessBytes.length);
       }
     }
@@ -206,114 +234,113 @@ class PdfService {
     };
 
     final input = await px.PdfDocument.openFile(src.path);
-    final totalPages = input.pagesCount;
-
-    // Smooth page budget adaptation if document is already very compact (< 90 KB/page):
-    if (totalPages > 0) {
-      final origBytesPerPage = srcSize / totalPages;
-      if (origBytesPerPage < 90 * 1024) {
-        final factor = (origBytesPerPage / (90 * 1024)).clamp(0.70, 1.0);
-        dpi = (dpi * factor).clamp(75.0, 135.0);
-        quality = (quality * factor).round().clamp(46, 74);
-        maxDimension = (maxDimension * factor).clamp(880.0, 1600.0);
-      }
-    }
-
-    final scale = dpi / 72.0;
-
-    Future<Uint8List?> renderDocument(double s, int q, double maxDim) async {
-      final output = pw.Document(compress: true);
-      for (var i = 1; i <= totalPages; i++) {
-        if (isCancelled?.call() == true) return null;
-
-        final page = await input.getPage(i);
-        var renderWidth = page.width * s;
-        var renderHeight = page.height * s;
-        final largest = math.max(renderWidth, renderHeight);
-        if (largest > maxDim) {
-          final factor = maxDim / largest;
-          renderWidth *= factor;
-          renderHeight *= factor;
-        }
-
-        final img = await page.render(
-          width: renderWidth,
-          height: renderHeight,
-          format: px.PdfPageImageFormat.jpeg,
-          quality: q,
-          forPrint: true, // Native Android print mode: full subpixel anti-aliasing & sharp font outlines
-          backgroundColor: '#FFFFFF',
-        );
-        final fmt = PdfPageFormat(page.width, page.height);
-        await page.close(); // Immediate native memory cleanup
-
-        if (img != null) {
-          output.addPage(pw.Page(
-            pageFormat: fmt,
-            margin: pw.EdgeInsets.zero,
-            build: (_) => pw.Image(pw.MemoryImage(img.bytes), fit: pw.BoxFit.fill),
-          ));
-        }
-
-        onProgress(i / totalPages, 'Compressing page $i of $totalPages…');
-        // Yield to Flutter event loop so UI progress bar and animations stay 100% fluid:
-        await Future.delayed(Duration.zero);
-      }
-      return await output.save();
-    }
-
-    Uint8List? resBytes;
     try {
-      resBytes = await renderDocument(scale, quality, maxDimension);
-    } catch (_) {}
+      final totalPages = input.pagesCount;
 
-    if (isCancelled?.call() == true) {
-      await input.close();
-      return null;
-    }
-
-    // Fallback pass: ONLY if the first pass was larger than original input,
-    // try an ultra-compact pass at 75 DPI @ 46% quality with forPrint: true:
-    if ((resBytes == null || resBytes.length >= srcSize) && level != CompressLevel.less) {
-      onProgress(0.05, 'Applying compact optimization…');
-      try {
-        resBytes = await renderDocument(75.0 / 72.0, 46, 880.0);
-      } catch (_) {}
-    }
-
-    await input.close();
-
-    if (isCancelled?.call() == true) return null;
-
-    // 3. Selection: STRICT GUARANTEE - NEVER RETURN A FILE LARGER THAN ORIGINAL
-    Uint8List? chosenBytes;
-    if (resBytes != null && resBytes.length < srcSize) {
-      chosenBytes = resBytes;
-    }
-    if (losslessBytes != null && losslessBytes.length < srcSize) {
-      if (chosenBytes == null) {
-        chosenBytes = losslessBytes;
-      } else {
-        if (level == CompressLevel.less) {
-          chosenBytes = losslessBytes;
-        } else if (resBytes != null && resBytes.length < losslessBytes.length) {
-          chosenBytes = resBytes;
-        } else {
-          chosenBytes = losslessBytes;
+      // Smooth page budget adaptation if document is already very compact (< 90 KB/page):
+      if (totalPages > 0) {
+        final origBytesPerPage = srcSize / totalPages;
+        if (origBytesPerPage < 90 * 1024) {
+          final factor = (origBytesPerPage / (90 * 1024)).clamp(0.70, 1.0);
+          dpi = (dpi * factor).clamp(75.0, 135.0);
+          quality = (quality * factor).round().clamp(46, 74);
+          maxDimension = (maxDimension * factor).clamp(880.0, 1600.0);
         }
       }
-    }
 
-    if (chosenBytes != null && chosenBytes.length < srcSize) {
-      await target.writeAsBytes(chosenBytes);
-      return CompressResult(target, srcSize, chosenBytes.length);
-    }
+      final scale = dpi / 72.0;
 
-    // If no candidate could be made smaller than the original input:
-    // Output the original bytes so the file is NEVER inflated!
-    final srcBytes = await srcFile.readAsBytes();
-    await target.writeAsBytes(srcBytes);
-    return CompressResult(target, srcSize, srcSize, isAlreadyOptimal: true);
+      Future<Uint8List?> renderDocument(double s, int q, double maxDim) async {
+        final output = pw.Document(compress: true);
+        for (var i = 1; i <= totalPages; i++) {
+          if (isCancelled?.call() == true) return null;
+
+          final page = await input.getPage(i);
+          var renderWidth = page.width * s;
+          var renderHeight = page.height * s;
+          final largest = math.max(renderWidth, renderHeight);
+          if (largest > maxDim) {
+            final factor = maxDim / largest;
+            renderWidth *= factor;
+            renderHeight *= factor;
+          }
+
+          final img = await page.render(
+            width: renderWidth,
+            height: renderHeight,
+            format: px.PdfPageImageFormat.jpeg,
+            quality: q,
+            forPrint: true, // Native Android print mode: full subpixel anti-aliasing & sharp font outlines
+            backgroundColor: '#FFFFFF',
+          );
+          final fmt = PdfPageFormat(page.width, page.height);
+          await page.close(); // Immediate native memory cleanup
+
+          if (img != null) {
+            output.addPage(pw.Page(
+              pageFormat: fmt,
+              margin: pw.EdgeInsets.zero,
+              build: (_) => pw.Image(pw.MemoryImage(img.bytes), fit: pw.BoxFit.fill),
+            ));
+          }
+
+          onProgress(i / totalPages, 'Compressing page $i of $totalPages…');
+          // Yield to Flutter event loop so UI progress bar and animations stay 100% fluid:
+          await Future.delayed(Duration.zero);
+        }
+        return await output.save();
+      }
+
+      Uint8List? resBytes;
+      try {
+        resBytes = await renderDocument(scale, quality, maxDimension);
+      } catch (_) {}
+
+      if (isCancelled?.call() == true) return null;
+
+      // Fallback pass: ONLY if the first pass was larger than original input,
+      // try an ultra-compact pass at 75 DPI @ 46% quality with forPrint: true:
+      if ((resBytes == null || resBytes.length >= srcSize) && level != CompressLevel.less) {
+        onProgress(0.05, 'Applying compact optimization…');
+        try {
+          resBytes = await renderDocument(75.0 / 72.0, 46, 880.0);
+        } catch (_) {}
+      }
+
+      if (isCancelled?.call() == true) return null;
+
+      // 3. Selection: STRICT GUARANTEE - NEVER RETURN A FILE LARGER THAN ORIGINAL
+      Uint8List? chosenBytes;
+      if (resBytes != null && resBytes.length < srcSize) {
+        chosenBytes = resBytes;
+      }
+      if (losslessBytes != null && losslessBytes.length < srcSize) {
+        if (chosenBytes == null) {
+          chosenBytes = losslessBytes;
+        } else {
+          if (level == CompressLevel.less) {
+            chosenBytes = losslessBytes;
+          } else if (resBytes != null && resBytes.length < losslessBytes.length) {
+            chosenBytes = resBytes;
+          } else {
+            chosenBytes = losslessBytes;
+          }
+        }
+      }
+
+      if (chosenBytes != null && chosenBytes.length < srcSize) {
+        await _atomicWrite(target, chosenBytes);
+        return CompressResult(target, srcSize, chosenBytes.length);
+      }
+
+      // If no candidate could be made smaller than the original input:
+      // Output the original bytes so the file is NEVER inflated!
+      final srcBytes = await srcFile.readAsBytes();
+      await _atomicWrite(target, srcBytes);
+      return CompressResult(target, srcSize, srcSize, isAlreadyOptimal: true);
+    } finally {
+      await input.close();
+    }
   }
 
   // ------------------------------------------------------------------- Split
@@ -354,29 +381,36 @@ class PdfService {
     final srcDoc = sf.PdfDocument(inputBytes: await File(src.path).readAsBytes());
     final files = <File>[];
 
-    for (var g = 0; g < groups.length; g++) {
-      if (isCancelled?.call() == true) {
-        srcDoc.dispose();
-        return files;
+    try {
+      for (var g = 0; g < groups.length; g++) {
+        if (isCancelled?.call() == true) {
+          return files;
+        }
+        final dst = sf.PdfDocument();
+        dst.compressionLevel = sf.PdfCompressionLevel.best;
+        dst.pageSettings.margins.all = 0;
+        try {
+          for (final n in groups[g]) {
+            final sp = srcDoc.pages[n - 1];
+            dst.pageSettings.size = sp.size;
+            dst.pages.add().graphics.drawPdfTemplate(sp.createTemplate(), Offset.zero);
+          }
+          final range = groups[g].length == 1
+              ? 'p${groups[g].first}'
+              : 'p${groups[g].first}-${groups[g].last}';
+          final f = File(p.join(out.path, '${base}_$range.pdf'));
+          final savedBytes = await dst.save();
+          await _atomicWrite(f, savedBytes);
+          files.add(f);
+        } finally {
+          dst.dispose();
+        }
+        onProgress((g + 1) / groups.length, 'Created part ${g + 1} of ${groups.length}…');
+        await Future.delayed(Duration.zero);
       }
-      final dst = sf.PdfDocument();
-      dst.pageSettings.margins.all = 0;
-      for (final n in groups[g]) {
-        final sp = srcDoc.pages[n - 1];
-        dst.pageSettings.size = sp.size;
-        dst.pages.add().graphics.drawPdfTemplate(sp.createTemplate(), Offset.zero);
-      }
-      final range = groups[g].length == 1
-          ? 'p${groups[g].first}'
-          : 'p${groups[g].first}-${groups[g].last}';
-      final f = File(p.join(out.path, '${base}_$range.pdf'));
-      await f.writeAsBytes(await dst.save());
-      dst.dispose();
-      files.add(f);
-      onProgress((g + 1) / groups.length, 'Created part ${g + 1} of ${groups.length}…');
-      await Future.delayed(Duration.zero);
+    } finally {
+      srcDoc.dispose();
     }
-    srcDoc.dispose();
     return files;
   }
 
@@ -388,28 +422,35 @@ class PdfService {
   }) async {
     final out = await _outDir();
     final dst = sf.PdfDocument();
+    dst.compressionLevel = sf.PdfCompressionLevel.best;
     dst.pageSettings.margins.all = 0;
 
-    for (var i = 0; i < files.length; i++) {
-      if (isCancelled?.call() == true) {
-        dst.dispose();
-        return null;
+    try {
+      for (var i = 0; i < files.length; i++) {
+        if (isCancelled?.call() == true) {
+          return null;
+        }
+        final bytes = await File(files[i].path).readAsBytes();
+        final srcDoc = sf.PdfDocument(inputBytes: bytes);
+        try {
+          for (var pIndex = 0; pIndex < srcDoc.pages.count; pIndex++) {
+            final sp = srcDoc.pages[pIndex];
+            dst.pageSettings.size = sp.size;
+            dst.pages.add().graphics.drawPdfTemplate(sp.createTemplate(), Offset.zero);
+          }
+        } finally {
+          srcDoc.dispose();
+        }
+        onProgress((i + 1) / files.length, 'Merging file ${i + 1} of ${files.length}…');
+        await Future.delayed(Duration.zero);
       }
-      final bytes = await File(files[i].path).readAsBytes();
-      final srcDoc = sf.PdfDocument(inputBytes: bytes);
-      for (var pIndex = 0; pIndex < srcDoc.pages.count; pIndex++) {
-        final sp = srcDoc.pages[pIndex];
-        dst.pageSettings.size = sp.size;
-        dst.pages.add().graphics.drawPdfTemplate(sp.createTemplate(), Offset.zero);
-      }
-      srcDoc.dispose();
-      onProgress((i + 1) / files.length, 'Merging file ${i + 1} of ${files.length}…');
-      await Future.delayed(Duration.zero);
+      final target = File(p.join(out.path, 'merged_${DateTime.now().millisecondsSinceEpoch}.pdf'));
+      final savedBytes = await dst.save();
+      await _atomicWrite(target, savedBytes);
+      return target;
+    } finally {
+      dst.dispose();
     }
-    final target = File(p.join(out.path, 'merged_${DateTime.now().millisecondsSinceEpoch}.pdf'));
-    await target.writeAsBytes(await dst.save());
-    dst.dispose();
-    return target;
   }
 
   // ------------------------------------------------------------------ Rotate
@@ -420,22 +461,27 @@ class PdfService {
   ) async {
     final out = await _outDir();
     final doc = sf.PdfDocument(inputBytes: await File(src.path).readAsBytes());
-    final angle = switch (degrees) {
-      90 => sf.PdfPageRotateAngle.rotateAngle90,
-      180 => sf.PdfPageRotateAngle.rotateAngle180,
-      270 => sf.PdfPageRotateAngle.rotateAngle270,
-      _ => sf.PdfPageRotateAngle.rotateAngle0,
-    };
-    for (var i = 0; i < doc.pages.count; i++) {
-      doc.pages[i].rotation = angle;
-      onProgress((i + 1) / doc.pages.count, 'Rotating page ${i + 1} of ${doc.pages.count}…');
-      await Future.delayed(Duration.zero);
+    doc.compressionLevel = sf.PdfCompressionLevel.best;
+    try {
+      final angle = switch (degrees) {
+        90 => sf.PdfPageRotateAngle.rotateAngle90,
+        180 => sf.PdfPageRotateAngle.rotateAngle180,
+        270 => sf.PdfPageRotateAngle.rotateAngle270,
+        _ => sf.PdfPageRotateAngle.rotateAngle0,
+      };
+      for (var i = 0; i < doc.pages.count; i++) {
+        doc.pages[i].rotation = angle;
+        onProgress((i + 1) / doc.pages.count, 'Rotating page ${i + 1} of ${doc.pages.count}…');
+        await Future.delayed(Duration.zero);
+      }
+      final base = p.basenameWithoutExtension(src.name);
+      final target = File(p.join(out.path, '${base}_rot$degrees.pdf'));
+      final savedBytes = await doc.save();
+      await _atomicWrite(target, savedBytes);
+      return target;
+    } finally {
+      doc.dispose();
     }
-    final base = p.basenameWithoutExtension(src.name);
-    final target = File(p.join(out.path, '${base}_rot$degrees.pdf'));
-    await target.writeAsBytes(await doc.save());
-    doc.dispose();
-    return target;
   }
 
   // ------------------------------------------------------------ Images to PDF
@@ -445,24 +491,30 @@ class PdfService {
   ) async {
     final out = await _outDir();
     final doc = sf.PdfDocument();
+    doc.compressionLevel = sf.PdfCompressionLevel.best;
     doc.pageSettings.margins.all = 0;
     doc.pageSettings.size = sf.PdfPageSize.a4;
 
-    for (var i = 0; i < imagePaths.length; i++) {
-      final bytes = await File(imagePaths[i]).readAsBytes();
-      final bitmap = sf.PdfBitmap(bytes);
-      final page = doc.pages.add();
-      final size = page.getClientSize();
-      page.graphics.drawImage(
-        bitmap,
-        Rect.fromLTWH(0, 0, size.width, size.height),
-      );
-      onProgress((i + 1) / imagePaths.length);
+    try {
+      for (var i = 0; i < imagePaths.length; i++) {
+        final bytes = await File(imagePaths[i]).readAsBytes();
+        final bitmap = sf.PdfBitmap(bytes);
+        final page = doc.pages.add();
+        final size = page.getClientSize();
+        page.graphics.drawImage(
+          bitmap,
+          Rect.fromLTWH(0, 0, size.width, size.height),
+        );
+        onProgress((i + 1) / imagePaths.length);
+        await Future.delayed(Duration.zero);
+      }
+      final target = File(p.join(out.path, 'images_${DateTime.now().millisecondsSinceEpoch}.pdf'));
+      final savedBytes = await doc.save();
+      await _atomicWrite(target, savedBytes);
+      return target;
+    } finally {
+      doc.dispose();
     }
-    final target = File(p.join(out.path, 'images_${DateTime.now().millisecondsSinceEpoch}.pdf'));
-    await target.writeAsBytes(await doc.save());
-    doc.dispose();
-    return target;
   }
 
   // ---------------------------------------------------------- Protect with Password
@@ -472,14 +524,19 @@ class PdfService {
   ) async {
     final out = await _outDir();
     final doc = sf.PdfDocument(inputBytes: await File(src.path).readAsBytes());
-    doc.security.userPassword = password;
-    doc.security.ownerPassword = password;
-    doc.security.algorithm = sf.PdfEncryptionAlgorithm.aesx256Bit;
-    final base = p.basenameWithoutExtension(src.name);
-    final target = File(p.join(out.path, '${base}_protected.pdf'));
-    await target.writeAsBytes(await doc.save());
-    doc.dispose();
-    return target;
+    doc.compressionLevel = sf.PdfCompressionLevel.best;
+    try {
+      doc.security.userPassword = password;
+      doc.security.ownerPassword = password;
+      doc.security.algorithm = sf.PdfEncryptionAlgorithm.aesx256Bit;
+      final base = p.basenameWithoutExtension(src.name);
+      final target = File(p.join(out.path, '${base}_protected.pdf'));
+      final savedBytes = await doc.save();
+      await _atomicWrite(target, savedBytes);
+      return target;
+    } finally {
+      doc.dispose();
+    }
   }
 
   // --------------------------------------------------------------- Watermark
@@ -489,30 +546,36 @@ class PdfService {
   ) async {
     final out = await _outDir();
     final doc = sf.PdfDocument(inputBytes: await File(src.path).readAsBytes());
-    final font = sf.PdfStandardFont(sf.PdfFontFamily.helvetica, 44, style: sf.PdfFontStyle.bold);
-    final brush = sf.PdfSolidBrush(sf.PdfColor(170, 170, 170, 80));
+    doc.compressionLevel = sf.PdfCompressionLevel.best;
+    try {
+      final font = sf.PdfStandardFont(sf.PdfFontFamily.helvetica, 44, style: sf.PdfFontStyle.bold);
+      final brush = sf.PdfSolidBrush(sf.PdfColor(170, 170, 170, 80));
 
-    for (var i = 0; i < doc.pages.count; i++) {
-      final page = doc.pages[i];
-      final size = page.getClientSize();
-      final g = page.graphics;
-      final state = g.save();
-      g.translateTransform(size.width / 2, size.height / 2);
-      g.rotateTransform(-45);
-      final textSize = font.measureString(text);
-      g.drawString(
-        text,
-        font,
-        brush: brush,
-        bounds: Rect.fromLTWH(-textSize.width / 2, -textSize.height / 2, textSize.width, textSize.height),
-      );
-      g.restore(state);
+      for (var i = 0; i < doc.pages.count; i++) {
+        final page = doc.pages[i];
+        final size = page.getClientSize();
+        final g = page.graphics;
+        final state = g.save();
+        g.translateTransform(size.width / 2, size.height / 2);
+        g.rotateTransform(-45);
+        final textSize = font.measureString(text);
+        g.drawString(
+          text,
+          font,
+          brush: brush,
+          bounds: Rect.fromLTWH(-textSize.width / 2, -textSize.height / 2, textSize.width, textSize.height),
+        );
+        g.restore(state);
+        await Future.delayed(Duration.zero);
+      }
+      final base = p.basenameWithoutExtension(src.name);
+      final target = File(p.join(out.path, '${base}_watermarked.pdf'));
+      final savedBytes = await doc.save();
+      await _atomicWrite(target, savedBytes);
+      return target;
+    } finally {
+      doc.dispose();
     }
-    final base = p.basenameWithoutExtension(src.name);
-    final target = File(p.join(out.path, '${base}_watermarked.pdf'));
-    await target.writeAsBytes(await doc.save());
-    doc.dispose();
-    return target;
   }
 
   // -------------------------------------------------------------------- Sign
@@ -523,20 +586,25 @@ class PdfService {
   ) async {
     final out = await _outDir();
     final doc = sf.PdfDocument(inputBytes: await File(src.path).readAsBytes());
-    final pageIndex = (pageNumber - 1).clamp(0, doc.pages.count - 1);
-    final page = doc.pages[pageIndex];
-    final size = page.getClientSize();
-    final bitmap = sf.PdfBitmap(signaturePngBytes);
-    const sigW = 160.0;
-    const sigH = 80.0;
-    final x = (size.width - sigW - 30).clamp(0.0, size.width);
-    final y = (size.height - sigH - 40).clamp(0.0, size.height);
-    page.graphics.drawImage(bitmap, Rect.fromLTWH(x, y, sigW, sigH));
-    final base = p.basenameWithoutExtension(src.name);
-    final target = File(p.join(out.path, '${base}_signed.pdf'));
-    await target.writeAsBytes(await doc.save());
-    doc.dispose();
-    return target;
+    doc.compressionLevel = sf.PdfCompressionLevel.best;
+    try {
+      final pageIndex = (pageNumber - 1).clamp(0, doc.pages.count - 1);
+      final page = doc.pages[pageIndex];
+      final size = page.getClientSize();
+      final bitmap = sf.PdfBitmap(signaturePngBytes);
+      const sigW = 160.0;
+      const sigH = 80.0;
+      final x = (size.width - sigW - 30).clamp(0.0, size.width);
+      final y = (size.height - sigH - 40).clamp(0.0, size.height);
+      page.graphics.drawImage(bitmap, Rect.fromLTWH(x, y, sigW, sigH));
+      final base = p.basenameWithoutExtension(src.name);
+      final target = File(p.join(out.path, '${base}_signed.pdf'));
+      final savedBytes = await doc.save();
+      await _atomicWrite(target, savedBytes);
+      return target;
+    } finally {
+      doc.dispose();
+    }
   }
 
   // ------------------------------------------------------------------ Unlock
@@ -548,14 +616,18 @@ class PdfService {
     final base = p.basenameWithoutExtension(src.name);
     final srcBytes = await File(src.path).readAsBytes();
     final doc = sf.PdfDocument(inputBytes: srcBytes, password: password);
-    doc.security.userPassword = '';
-    doc.security.ownerPassword = '';
-    doc.security.permissions.clear();
-    final outBytes = await doc.save();
-    doc.dispose();
-    final target = File(p.join(out.path, '${base}_unlocked.pdf'));
-    await target.writeAsBytes(outBytes);
-    return target;
+    doc.compressionLevel = sf.PdfCompressionLevel.best;
+    try {
+      doc.security.userPassword = '';
+      doc.security.ownerPassword = '';
+      doc.security.permissions.clear();
+      final outBytes = await doc.save();
+      final target = File(p.join(out.path, '${base}_unlocked.pdf'));
+      await _atomicWrite(target, outBytes);
+      return target;
+    } finally {
+      doc.dispose();
+    }
   }
 
   // ----------------------------------------------------------- PDF to Images
@@ -569,30 +641,43 @@ class PdfService {
     final doc = await px.PdfDocument.openFile(src.path);
     final files = <File>[];
 
-    for (var i = 1; i <= doc.pagesCount; i++) {
-      if (isCancelled?.call() == true) {
-        await doc.close();
-        return files;
+    try {
+      for (var i = 1; i <= doc.pagesCount; i++) {
+        if (isCancelled?.call() == true) {
+          return files;
+        }
+        final page = await doc.getPage(i);
+
+        // Memory safety guard: cap dimensions to max 2400 px to avoid OOM crashes on huge PDFs
+        var renderW = page.width * 2.0;
+        var renderH = page.height * 2.0;
+        final largestDim = math.max(renderW, renderH);
+        if (largestDim > 2400.0) {
+          final factor = 2400.0 / largestDim;
+          renderW *= factor;
+          renderH *= factor;
+        }
+
+        final img = await page.render(
+          width: renderW,
+          height: renderH,
+          format: px.PdfPageImageFormat.jpeg,
+          backgroundColor: '#FFFFFF',
+          quality: 90,
+          forPrint: true,
+        );
+        await page.close(); // Immediate native texture cleanup
+        if (img != null) {
+          final f = File(p.join(out.path, '${base}_page_$i.jpg'));
+          await _atomicWrite(f, img.bytes);
+          files.add(f);
+        }
+        onProgress(i / doc.pagesCount, 'Exporting image $i of ${doc.pagesCount}…');
+        await Future.delayed(Duration.zero);
       }
-      final page = await doc.getPage(i);
-      final img = await page.render(
-        width: page.width * 2.0,
-        height: page.height * 2.0,
-        format: px.PdfPageImageFormat.jpeg,
-        backgroundColor: '#FFFFFF',
-        quality: 90,
-        forPrint: true,
-      );
-      await page.close();
-      if (img != null) {
-        final f = File(p.join(out.path, '${base}_page_$i.jpg'));
-        await f.writeAsBytes(img.bytes);
-        files.add(f);
-      }
-      onProgress(i / doc.pagesCount, 'Exporting image $i of ${doc.pagesCount}…');
-      await Future.delayed(Duration.zero);
+    } finally {
+      await doc.close();
     }
-    await doc.close();
     return files;
   }
 
@@ -602,7 +687,7 @@ class PdfService {
       final dir = await _outDir();
       if (!await dir.exists()) return [];
       final entities = await dir.list(followLinks: false).toList();
-      final files = entities.whereType<File>().toList();
+      final files = entities.whereType<File>().where((f) => !f.path.contains('.tmp_')).toList();
 
       final withStats = <(File, DateTime)>[];
       for (final f in files) {

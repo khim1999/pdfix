@@ -51,12 +51,19 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
 
   Future<void> _loadRecentDocuments() async {
     try {
-      final checkDirs = [
-        Directory('/sdcard/Download'),
-        Directory('/sdcard/Documents'),
-        Directory('/storage/emulated/0/Download'),
-        Directory('/storage/emulated/0/Documents'),
-      ];
+      final checkDirs = <Directory>[];
+      final primaryDownload = Directory('/storage/emulated/0/Download');
+      final primaryDocuments = Directory('/storage/emulated/0/Documents');
+      if (await primaryDownload.exists()) {
+        checkDirs.add(primaryDownload);
+      } else {
+        checkDirs.add(Directory('/sdcard/Download'));
+      }
+      if (await primaryDocuments.exists()) {
+        checkDirs.add(primaryDocuments);
+      } else {
+        checkDirs.add(Directory('/sdcard/Documents'));
+      }
 
       final foundFiles = <File>[];
       for (final dir in checkDirs) {
@@ -73,14 +80,17 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
         }
       }
 
-      // Query modification dates asynchronously
-      final withStats = <(File, DateTime, int)>[];
-      for (final entity in foundFiles) {
+      // Query modification dates concurrently with Future.wait for instant display
+      final statTasks = foundFiles.take(40).map((entity) async {
         try {
           final stat = await entity.stat();
-          withStats.add((entity, stat.modified, stat.size));
-        } catch (_) {}
-      }
+          return (entity, stat.modified, stat.size);
+        } catch (_) {
+          return null;
+        }
+      });
+      final results = await Future.wait(statTasks);
+      final withStats = results.whereType<(File, DateTime, int)>().toList();
       withStats.sort((a, b) => b.$2.compareTo(a.$2));
 
       // Fast initial population (instant display, no page count delay)
@@ -110,6 +120,7 @@ class _PickPdfScreenState extends State<PickPdfScreen> {
             _recentFiles[i] = PickedPdf(item.path, item.name, item.size, pages);
           });
         }
+        await Future.delayed(Duration.zero);
       }
     } catch (_) {}
   }

@@ -39,6 +39,7 @@ class _WatermarkScreenState extends State<WatermarkScreen> {
   }
 
   Future<void> _run() async {
+    if (busy || file == null) return;
     final text = textCtrl.text.trim();
     if (text.isEmpty) {
       showError(context, 'Please enter watermark text.');

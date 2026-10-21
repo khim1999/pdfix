@@ -27,6 +27,7 @@ class _ImageToPdfScreenState extends State<ImageToPdfScreen> {
   }
 
   Future<void> _run() async {
+    if (busy || images.isEmpty) return;
     setState(() {
       busy = true;
       progress = 0;

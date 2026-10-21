@@ -54,6 +54,7 @@ class _SignScreenState extends State<SignScreen> {
   }
 
   Future<void> _run() async {
+    if (busy || file == null) return;
     if (strokes.isEmpty) {
       showError(context, 'Please draw your signature first.');
       return;

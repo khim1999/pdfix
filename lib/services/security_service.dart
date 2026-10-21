@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -70,9 +71,9 @@ class SecurityService extends ChangeNotifier {
       await _applySecureScreen(true);
     }
 
-    // If auto-wipe is on, do a cleanup on startup
+    // If auto-wipe is on, do a cleanup in background without blocking startup
     if (_isAutoWipeEnabled) {
-      await wipeCache();
+      unawaited(wipeCache());
     }
 
     _initialized = true;
